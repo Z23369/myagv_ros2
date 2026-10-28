@@ -8,7 +8,7 @@
 const unsigned char header[2] = { 0xfe, 0xfe };
 
 boost::asio::io_service iosev;
-boost::asio::serial_port sp(iosev, "/dev/ttyS0");
+boost::asio::serial_port sp(iosev, "/dev/ttyAMA2");
 
 std::array<double, 36> odom_pose_covariance = {
     {1e-9, 0, 0, 0, 0, 0,
@@ -53,7 +53,7 @@ bool MyAGV::init()
     pub_voltage = create_publisher<std_msgs::msg::Float32>("voltage", 10);
     pub_voltage_backup = create_publisher<std_msgs::msg::Float32>("voltage_backup", 10);
     setAutoReportState(1);
-    restore(); //first restore,abort current err,don't restore
+    // restore disabled for sensor test
     return true;
 }
 
@@ -147,7 +147,7 @@ bool MyAGV::readSpeed()
                 RCLCPP_ERROR(this->get_logger(),"ERROR %d wheel current > 2000", wheel_num);
             }
         }
-        restoreRun();
+        // motor recovery disabled for sensor test
         return false;
     }
     if (ret != TOTAL_RECEIVE_SIZE) {

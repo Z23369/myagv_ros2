@@ -3,11 +3,13 @@
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include <iostream>
-#include <cstring> 
+#include <cstring>
+#include <chrono> 
 
 double linearX = 0.0;
 double linearY = 0.0;
 double angularZ = 0.0;
+auto lastCmdTime = std::chrono::steady_clock::now();
 
 //using namespace std;
 
@@ -16,6 +18,7 @@ void cmdCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
     linearX = msg->linear.x;
     linearY = msg->linear.y;
     angularZ = msg->angular.z;
+    lastCmdTime = std::chrono::steady_clock::now();
     //RCLCPP_INFO(rclcpp::get_logger("myagv_odometry_node"), "cmdCallback: linearX: %.2f, linearY: %.2f, angularZ: %.2f", linearX, linearY, angularZ);
 }
 
@@ -35,6 +38,7 @@ int main(int argc, char* argv[])
 
     while (rclcpp::ok()) {
         rclcpp::spin_some(node);
+        if (std::chrono::steady_clock::now() - lastCmdTime > std::chrono::milliseconds(500)) { linearX = 0.0; linearY = 0.0; angularZ = 0.0; }
         node->execute(linearX, linearY, angularZ);
         loop_rate.sleep();
     }
